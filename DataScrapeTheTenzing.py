@@ -5,7 +5,6 @@ import re
 import time
 import datetime
 
-# Test Commit
 def ScrapeWebpage():
     url = Request('https://www.thetenzingapts.com/floorplans.aspx', headers={'User-Agent': 'Mozilla/5.0'})
 
