@@ -8,7 +8,7 @@ import DataScrapeTheTenzing
 import datetime
 from discord import Webhook as wh
 from discord import RequestsWebhookAdapter
-
+# d 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 GUILD = os.getenv('DISCORD_GUILD')
@@ -19,6 +19,7 @@ WH_ID = os.getenv('SPIDEY_BOT_WEBHOOK_ID')
 client = discord.Client()
 webhook = wh.partial(WH_ID, WH_TOKEN, adapter=RequestsWebhookAdapter())
 
+"""
 async def background_scrape_timer():
     print("in bg task")
     await client.wait_until_ready()
@@ -28,34 +29,12 @@ async def background_scrape_timer():
         print("in while")
         counter += 1
         await webhook.send("The Tenzing 3 Bedroom Availability:")
-        await asyncio.sleep(60) # task runs every 60 seconds
+        await asyncio.sleep(60) # sleep to stop loop after first iteration in the minute
         print("asleep")
-        
-        # rent = ""
-        # webhook.send("BotBot starting up...")
-        # while True:
-        #     if datetime.datetime.now().minute % 15 == 0: 
-        #         stats = DataScrape.ScrapeWebpage()
-        #         await webhook.send("The Tenzing 3 Bedroom Availability:")
-        #         await webhook.send("Floor Plan: " + stats[0])
-        #         await webhook.send("Bed/Bath: " + stats[1])
-        #         await webhook.send("Rent: " + stats[3] + stats[4])
-        #         await webhook.send(stats[5])
-
-        #         if rent != stats[3] + stats[4]:
-        #             await webhook.send("@Everyone rent has changed!")
-
-        #         else:
-        #             continue
-
-        #         rent = stats[3] + stats[4]
-        #     else: 
-        #         continue
-        #     time.sleep((15 - datetime.datetime.now().minute % 15) * 60)
+"""
 
 @client.event
 async def on_ready():
-    """
     for guild in client.guilds:
         if guild.name == GUILD:
             break
@@ -67,7 +46,6 @@ async def on_ready():
 
     members = '\n -'.join([member.name for member in guild.members])
     print('\n Guild Members:\n -' + members)
-    """
     print(str(client.user.name) + " is connected!") 
 
 # @client.command
@@ -75,7 +53,7 @@ async def on_ready():
 #     await ctx.send(f"{member}")  
 
 @client.event
-async def on_message(message):\
+async def on_message(message):
 
     
     if message.author == client.user:
@@ -97,7 +75,6 @@ async def on_message(message):\
 _loop = asyncio.get_event_loop()
 
 async def my_background_task():
-    webhook.send("This is \n a test")
     rent = ""
     while True:
         if datetime.datetime.now().minute % 15 == 0: 
