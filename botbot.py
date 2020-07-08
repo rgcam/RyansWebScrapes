@@ -1,113 +1,101 @@
-# bot.py
-import os
-import discord
+# botbot.py
 import asyncio
 from dotenv import load_dotenv
-import time
 import DataScrapeTheTenzing
 import datetime
+import discord
 from discord import Webhook as wh
 from discord import RequestsWebhookAdapter
-# d 
-load_dotenv()
-TOKEN = os.getenv('DISCORD_TOKEN')
-GUILD = os.getenv('DISCORD_GUILD')
+from discord.ext.commands import Bot
+import os
+from discord.ext.tasks import loop
+import time
 
-WH_TOKEN = os.getenv('SPIDEY_BOT_WEBHOOK_TOKEN')
-WH_ID = os.getenv('SPIDEY_BOT_WEBHOOK_ID')
+load_dotenv()
+
+TOKEN = os.getenv('DISCORD_TOKEN')
+CHANNEL_GENERAL = os.getenv('DISCORD_GENERAL')
+CHANNEL_LOG = os.getenv('DISCORD_LOG')
+
+SPIDEY_TOKEN = os.getenv('SPIDEY_BOT_WEBHOOK_TOKEN')
+SPIDEY_ID = os.getenv('SPIDEY_BOT_WEBHOOK_ID')
+
+LOG_TOKEN = os.getenv('LOGGERHEAD_WEBHOOK_TOKEN')
+LOG_ID = os.getenv('LOGGERHEAD_WEBHOOK_ID')
 
 client = discord.Client()
-webhook = wh.partial(WH_ID, WH_TOKEN, adapter=RequestsWebhookAdapter())
 
-"""
-async def background_scrape_timer():
-    print("in bg task")
-    await client.wait_until_ready()
-    counter = 0
-    channel = discord.Object(id=GUILD)
-    while not client.is_closed:
-        print("in while")
-        counter += 1
-        await webhook.send("The Tenzing 3 Bedroom Availability:")
-        await asyncio.sleep(60) # sleep to stop loop after first iteration in the minute
-        print("asleep")
-"""
+webhook_general = wh.partial(SPIDEY_ID, SPIDEY_TOKEN, adapter=RequestsWebhookAdapter())
+webhook_log  = wh.partial(LOG_ID, LOG_TOKEN, adapter=RequestsWebhookAdapter())
+
+_loop = asyncio.get_event_loop()
 
 @client.event
 async def on_ready():
     for guild in client.guilds:
-        if guild.name == GUILD:
+        if guild.name == CHANNEL_GENERAL:
             break
 
     print(
         f'{client.user} is connected to the following guild:\n'
         f'{guild.name}(id: {guild.id})'
     )
-
+    
     members = '\n -'.join([member.name for member in guild.members])
     print('\n Guild Members:\n -' + members)
     print(str(client.user.name) + " is connected!") 
 
-# @client.command
-# async def mention(self, ctx, member : discord.Member):
-#     await ctx.send(f"{member}")  
-
 @client.event
 async def on_message(message):
-
-    
     if message.author == client.user:
         return
-
     if message.content == "Hello" or message.content == "hello":
         greeting = "Hello!"
         await message.channel.send(greeting)
-    
     if message.content == "Availability" or message.content == "availability":
         stats = DataScrapeTheTenzing.ScrapeWebpage()
-        webhook.send("The Tenzing 3 Bedroom Availability:" + 
+        webhook_general.send("The Tenzing 3 Bedroom Availability:" + 
                         "\nFloor Plan: " + stats[0] + 
                         "\nBed/Bath: " + stats[1] +
                         "\nRent: " + stats[3] + stats[4] + 
                         "\n" +stats[5])
-   
 
-_loop = asyncio.get_event_loop()
-
-async def my_background_task():
+@loop(seconds=60)
+async def Scrapes():
     rent = ""
-    while True:
-        if datetime.datetime.now().minute % 15 == 0: 
+    await client.wait_until_ready()
+    check_time = datetime.datetime.now()
+    current_hour = int(check_time.strftime('%H'))
+    current_min = int(check_time.strftime('%M'))
+    if current_hour >= 11 and current_hour <= 19:
+        while client.is_closed:
+            t = datetime.datetime.now()
             stats = DataScrapeTheTenzing.ScrapeWebpage()
-            webhook.send("__________________________________")
-            webhook.send("The Tenzing 3 Bedroom Availability:" + 
+            if t.strftime('%H') <= 11 and t.strftime('%H') >= 19:
+                break
+            elif rent != stats[3] + stats[4]:
+                webhook_general.send("The Tenzing 3 Bedroom Availability:" + 
                         "\nFloor Plan: " + stats[0] + 
                         "\nBed/Bath: " + stats[1] +
                         "\nRent: " + stats[3] + stats[4] + 
                         "\n" +stats[5])
-
-            # webhook.send("Floor Plan: " + stats[0])
-            # webhook.send("Bed/Bath: " + stats[1])
-            # webhook.send("Rent: " + stats[3] + stats[4])
-            # webhook.send(stats[5])
-
-            time.sleep(60)
-
-            if rent != stats[3] + stats[4] and rent != "":
                 myid = os.getenv('RGCAM')
-                webhook.send("<@" + myid + "> rent has changed!")
+                webhook_general.send("<@" + myid + "> rent has changed!")
+                rent = stats[3] + stats[4]
+            print("Scraped at " + t.strftime('%I:%M %p'))
+            webhook_log.send("Scraped at " + t.strftime('%I:%M %p'))
+            time.sleep(60)
+    else:
+        print("Complex is closed. Going to sleep for the night...")
+        webhook_log.send("Complex is closed. Going to sleep for the night...")
+        if current_hour <= 11:
+            hour_adjust = 0
+        if current_hour >=7:
+            hour_adjust = 11
+        hours_in_seconds = (23 - current_hour + hour_adjust) * 3600
+        minutes_in_seconds = (60 - current_min) * 60
+        sleeptime = hours_in_seconds + minutes_in_seconds
+        time.sleep(sleeptime)
 
-            else:
-                continue
-
-            rent = stats[3] + stats[4]
-        else: 
-            continue
-        time.sleep((15 - datetime.datetime.now().minute % 15) * 60)
-
-
-# client.loop.create_task(background_scrape_timer())
-client.loop.create_task(my_background_task())
+Scrapes.start()
 client.run(TOKEN)
-# time.wait(5)
-
