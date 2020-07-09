@@ -40,7 +40,7 @@ async def on_ready():
         f'{client.user} is connected to the following guild:\n'
         f'{guild.name}(id: {guild.id})'
     )
-    
+
     members = '\n -'.join([member.name for member in guild.members])
     print('\n Guild Members:\n -' + members)
     print(str(client.user.name) + " is connected!") 
@@ -67,11 +67,11 @@ async def Scrapes():
     check_time = datetime.datetime.now()
     current_hour = int(check_time.strftime('%H'))
     current_min = int(check_time.strftime('%M'))
-    if current_hour >= 11 and current_hour <= 19:
+    if current_hour >= 11 and current_hour < 19:
         while client.is_closed:
             t = datetime.datetime.now()
             stats = DataScrapeTheTenzing.ScrapeWebpage()
-            if t.strftime('%H') <= 11 and t.strftime('%H') >= 19:
+            if current_hour < 11 and current_hour >= 19:
                 break
             elif rent != stats[3] + stats[4]:
                 webhook_general.send("The Tenzing 3 Bedroom Availability:" + 
