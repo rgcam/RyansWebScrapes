@@ -53,7 +53,7 @@ async def on_message(message):
         greeting = "Hello!"
         await message.channel.send(greeting)
     if message.content == "Availability" or message.content == "availability":
-        stats = DataScrapeTheTenzing.ScrapeWebpage()
+        stats = DataScrapeTheTenzing.ScrapeTenzing()
         webhook_general.send("The Tenzing 3 Bedroom Availability:" + 
                         "\nFloor Plan: " + stats[0] + 
                         "\nBed/Bath: " + stats[1] +
@@ -64,38 +64,41 @@ async def on_message(message):
 async def Scrapes():
     rent = ""
     await client.wait_until_ready()
-    check_time = datetime.datetime.now()
-    current_hour = int(check_time.strftime('%H'))
-    current_min = int(check_time.strftime('%M'))
-    if current_hour >= 11 and current_hour < 19:
-        while client.is_closed:
+    while client.is_closed:
+        check_time = datetime.datetime.now()
+        current_hour = int(check_time.strftime('%H'))
+        current_min = int(check_time.strftime('%M'))
+        if current_hour >= 11 and current_hour < 19:
             t = datetime.datetime.now()
-            stats = DataScrapeTheTenzing.ScrapeWebpage()
+            stats = DataScrapeTheTenzing.ScrapeTenzing()
             if current_hour < 11 and current_hour >= 19:
                 break
             elif rent != stats[3] + stats[4]:
+                myid = os.getenv('RGCAM')
                 webhook_general.send("The Tenzing 3 Bedroom Availability:" + 
+                        "\n<@" + myid + ">" +
                         "\nFloor Plan: " + stats[0] + 
                         "\nBed/Bath: " + stats[1] +
                         "\nRent: " + stats[3] + stats[4] + 
                         "\n" +stats[5])
-                myid = os.getenv('RGCAM')
-                webhook_general.send("<@" + myid + "> rent has changed!")
+                #webhook_general.send("<@" + myid + "> rent has changed!")
                 rent = stats[3] + stats[4]
             print("Scraped at " + t.strftime('%I:%M %p'))
             webhook_log.send("Scraped at " + t.strftime('%I:%M %p'))
             time.sleep(60)
-    else:
-        print("Complex is closed. Going to sleep for the night...")
-        webhook_log.send("Complex is closed. Going to sleep for the night...")
-        if current_hour <= 11:
-            hour_adjust = 0
-        if current_hour >=7:
-            hour_adjust = 11
-        hours_in_seconds = (23 - current_hour + hour_adjust) * 3600
-        minutes_in_seconds = (60 - current_min) * 60
-        sleeptime = hours_in_seconds + minutes_in_seconds
-        time.sleep(sleeptime)
+        else:
+            print("Complex is closed.")
+            webhook_log.send("Complex is closed.")
+            if current_hour <= 11:
+                hour_adjust = 0
+            if current_hour >=7:
+                hour_adjust = 11
+            hours_in_seconds = (23 - current_hour + hour_adjust) * 3600
+            minutes_in_seconds = (60 - current_min) * 60
+            sleeptime = hours_in_seconds + minutes_in_seconds
+            webhook_log.send("Sleeping for " + str((sleeptime/60)/60) + " hours.")
+            time.sleep(sleeptime)
+
 
 Scrapes.start()
 client.run(TOKEN)
