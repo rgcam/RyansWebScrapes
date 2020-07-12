@@ -5,7 +5,7 @@ import re
 import time
 import datetime
 
-def ScrapeWebpage():
+def ScrapeTenzing():
     url = Request('https://www.thetenzingapts.com/floorplans.aspx', headers={'User-Agent': 'Mozilla/5.0'})
 
     #opening up connection, getting page
