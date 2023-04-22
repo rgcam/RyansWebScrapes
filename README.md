@@ -1,5 +1,4 @@
 # RyansWebScrapes
-### This is a fork of RGCam's Web scraper. 
 
 To use the Microsoft job alert web scraper, you will need:
 
