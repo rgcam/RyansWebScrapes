@@ -2,7 +2,6 @@ from discord import SyncWebhook
 from selenium import webdriver
 from bs4 import BeautifulSoup
 import params_file
-import keyboard
 import datetime
 import time
 import chromedriver_autoinstaller
@@ -60,11 +59,6 @@ while not finished:
     print("Refreshing webpage...")
     driver.refresh()
     time.sleep(5)
-    
-    if keyboard.is_pressed("F12"):
-        print("F12 pressed, exiting program...")
-        driver.close()
-        finished = True
 
     #Set latest posting time
     if len(job_list) != 0:
