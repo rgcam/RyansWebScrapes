@@ -2,3 +2,4 @@
 .vscode
 /HTML
 *.html
+/MicrosoftJobAlertScraper/params_file.py
