@@ -55,7 +55,7 @@ while not finished:
         webhook.send(job_notif)
 
     #Wait 15 minutes
-    time.sleep(960)
+    time.sleep(params_file.refresh_delay_seconds)
 
     print("Refreshing webpage...")
     driver.refresh()
